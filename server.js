@@ -254,6 +254,7 @@ function hashSeed(phrase) {
 
 // ── AUTH ──
 app.post('/api/auth/register', (req, res) => {
+  try {
   const phrase = generateSeedPhrase();
   const userId = hashSeed(phrase);
 
@@ -272,6 +273,10 @@ app.post('/api/auth/register', (req, res) => {
 
   auditLog(userId, 'register', 'Account created');
   ok(res, { seed_phrase: phrase, csrf_token: req.session.csrfToken, salt });
+  } catch (e) {
+    console.error('Register error:', e);
+    fail(res, e.message || 'Registration failed', 500);
+  }
 });
 
 app.post('/api/auth/login', (req, res) => {
@@ -936,6 +941,12 @@ app.post('/api/chat/messages/send', requireAuth, verifyCsrf, (req, res) => {
 // ── SERVE FRONTEND ──
 app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, 'index.html'));
+});
+
+// Global error handler (must be after all routes)
+app.use((err, req, res, next) => {
+  console.error('Unhandled error:', err);
+  res.status(500).json({ success: false, error: err.message || 'Internal server error' });
 });
 
 // ── START ──

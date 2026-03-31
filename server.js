@@ -7,7 +7,7 @@ const fs = require('fs');
 const { TOTP, Secret } = require('otpauth');
 
 const app = express();
-const PORT = 5500;
+const PORT = process.env.PORT || 5500;
 
 // ── DATABASE SETUP ──
 const dataDir = path.join(__dirname, 'data');

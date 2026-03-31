@@ -111,6 +111,8 @@ db.exec(`
 try { db.exec('CREATE INDEX IF NOT EXISTS idx_conv_user1 ON conversations(user1_id)'); } catch(e) {}
 try { db.exec('CREATE INDEX IF NOT EXISTS idx_conv_user2 ON conversations(user2_id)'); } catch(e) {}
 try { db.exec('CREATE INDEX IF NOT EXISTS idx_msg_conv ON messages(conversation_id, created_at)'); } catch(e) {}
+try { db.exec("ALTER TABLE users ADD COLUMN unique_id TEXT DEFAULT ''"); } catch(e) {}
+try { db.exec("ALTER TABLE users ADD COLUMN pin_failures INTEGER DEFAULT 0"); } catch(e) {}
 try { db.exec("ALTER TABLE users ADD COLUMN chat_public_key TEXT DEFAULT ''"); } catch(e) {}
 try { db.exec("ALTER TABLE users ADD COLUMN chat_private_key_enc TEXT DEFAULT ''"); } catch(e) {}
 try { db.exec("ALTER TABLE users ADD COLUMN chat_private_key_iv TEXT DEFAULT ''"); } catch(e) {}

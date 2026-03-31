@@ -1,0 +1,177 @@
+:root {
+  --color-bg: #000000;
+  --color-surface: #0a0a0a;
+  --color-border: #ffffff;
+  --color-text: #ffffff;
+  --color-text-muted: #666666;
+  --color-accent: #ffffff;
+  --color-input-bg: #111111;
+  --color-hover: #ffffff;
+  --color-hover-text: #000000;
+  --color-danger: #ffffff;
+  --color-toggle-bg: #222222;
+  --color-toggle-knob: #666666;
+
+  --font-title: 'EB Garamond', Garamond, 'Times New Roman', serif;
+  --font-body: 'DM Sans', 'Helvetica Neue', Arial, sans-serif;
+
+  --border: 1px solid #ffffff;
+  --border-muted: 1px solid #333333;
+  --radius: 0px;
+
+  --spacing-xs: 4px;
+  --spacing-sm: 8px;
+  --spacing-md: 16px;
+  --spacing-lg: 24px;
+  --spacing-xl: 48px;
+  --spacing-2xl: 80px;
+
+  --font-size-xs: 0.75rem;
+  --font-size-sm: 0.875rem;
+  --font-size-base: 1rem;
+  --font-size-lg: 1.25rem;
+  --font-size-xl: 1.5rem;
+  --font-size-2xl: 2rem;
+  --font-size-3xl: 3rem;
+}
+
+/* Custom fonts are applied via JS directly to --font-title and --font-body */
+
+/* Font sizes */
+[data-font-size="small"] { font-size: 14px; }
+[data-font-size="medium"] { font-size: 16px; }
+[data-font-size="large"] { font-size: 18px; }
+
+/* Compact mode */
+[data-compact="true"] {
+  --spacing-sm: 4px;
+  --spacing-md: 8px;
+  --spacing-lg: 16px;
+  --spacing-xl: 24px;
+  --spacing-2xl: 40px;
+}
+
+/* Accent colors */
+[data-accent="blue"] {
+  --color-accent: #4a9eff;
+  --color-hover: #4a9eff;
+}
+[data-accent="green"] {
+  --color-accent: #4aff7a;
+  --color-hover: #4aff7a;
+}
+[data-accent="red"] {
+  --color-accent: #ff4a4a;
+  --color-hover: #ff4a4a;
+}
+[data-accent="purple"] {
+  --color-accent: #b44aff;
+  --color-hover: #b44aff;
+}
+[data-accent="orange"] {
+  --color-accent: #ff9f4a;
+  --color-hover: #ff9f4a;
+}
+
+/* Sidebar right */
+[data-sidebar="right"] .nav {
+  left: auto;
+  right: 0;
+  border-right: none;
+  border-left: var(--border);
+}
+[data-sidebar="right"] .main {
+  margin-left: auto;
+  margin-right: calc(220px + ((100vw - 220px - 1060px) / 2));
+}
+@media (max-width: 1280px) {
+  [data-sidebar="right"] .main {
+    margin-left: 0;
+    margin-right: 220px;
+  }
+}
+
+[data-theme="light"] {
+  --color-bg: #f5f5f5;
+  --color-surface: #ffffff;
+  --color-border: #000000;
+  --color-text: #000000;
+  --color-text-muted: #777777;
+  --color-accent: #000000;
+  --color-input-bg: #eeeeee;
+  --color-hover: #000000;
+  --color-hover-text: #ffffff;
+  --color-danger: #000000;
+  --color-toggle-bg: #cccccc;
+  --color-toggle-knob: #999999;
+
+  --border: 1px solid #000000;
+  --border-muted: 1px solid #cccccc;
+}
+
+[data-theme="light"] .toggle {
+  background: var(--color-toggle-bg);
+  border-color: #aaa;
+}
+
+[data-theme="light"] .toggle__knob {
+  background: var(--color-toggle-knob);
+}
+
+[data-theme="light"] .toggle--active {
+  background: var(--color-text);
+  border-color: var(--color-text);
+}
+
+[data-theme="light"] .toggle--active .toggle__knob {
+  background: var(--color-bg);
+}
+
+[data-theme="light"] .nav {
+  background: var(--color-bg);
+}
+
+[data-theme="light"] .nav__tab:hover:not(.nav__tab--active) {
+  background: #e0e0e0;
+}
+
+[data-theme="light"] .drop-zone:hover,
+[data-theme="light"] .drop-zone--active {
+  background: #e8e8e8;
+}
+
+[data-theme="light"] .dash-card:hover {
+  background: #e8e8e8;
+}
+
+[data-theme="light"] .item:hover {
+  background: #e8e8e8;
+}
+
+[data-theme="light"] .strength-btn:hover:not(.strength-btn--active) {
+  background: #e0e0e0;
+  color: #000;
+}
+
+[data-theme="light"] .btn--icon:hover {
+  background: #e0e0e0;
+  color: #000;
+}
+
+[data-theme="light"] .key-hidden {
+  color: transparent;
+  text-shadow: 0 0 8px rgba(0,0,0,0.4);
+}
+
+[data-theme="light"] .preloader {
+  background: var(--color-bg);
+}
+
+[data-theme="light"] .toast {
+  background: var(--color-surface);
+  border-color: var(--color-border);
+}
+
+[data-theme="light"] .modal-overlay {
+  background: rgba(0, 0, 0, 0.5);
+}

@@ -1,0 +1,1417 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ENCRIPTOR</title>
+
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;700&family=EB+Garamond:wght@400;500;600;700&family=Playfair+Display:wght@400;500;600;700&family=Cormorant+Garamond:wght@400;500;600;700&family=Libre+Baskerville:wght@400;700&family=Inter:wght@300;400;500;700&family=Roboto:wght@300;400;500;700&family=Source+Sans+3:wght@300;400;500;700&family=IBM+Plex+Sans:wght@300;400;500;700&display=swap" rel="stylesheet">
+
+  <!-- Lenis -->
+  <link rel="stylesheet" href="https://unpkg.com/lenis@1.3.21/dist/lenis.css">
+
+  <!-- Apply saved theme immediately to prevent flash -->
+  <script>
+    (function() {
+      var d = document.documentElement;
+      var t = localStorage.getItem('encriptor-theme');
+      if (t === 'light') d.setAttribute('data-theme', 'light');
+      var fs = localStorage.getItem('encriptor-font-size');
+      if (fs) d.setAttribute('data-font-size', fs);
+      var s = localStorage.getItem('encriptor-sidebar');
+      if (s === 'right') d.setAttribute('data-sidebar', 'right');
+      var hf = localStorage.getItem('encriptor-header-font');
+      if (hf) d.style.setProperty('--font-title', "'" + hf + "', serif");
+      var bf = localStorage.getItem('encriptor-body-font');
+      if (bf) d.style.setProperty('--font-body', "'" + bf + "', sans-serif");
+    })();
+  </script>
+
+  <!-- App CSS -->
+  <link rel="stylesheet" href="assets/css/reset.css">
+  <link rel="stylesheet" href="assets/css/variables.css">
+  <link rel="stylesheet" href="assets/css/layout.css">
+  <link rel="stylesheet" href="assets/css/components.css">
+</head>
+<body>
+
+  <!-- PRELOADER -->
+  <div class="preloader" id="preloader">
+    <div class="preloader__title">Encriptor</div>
+    <div class="preloader__bar">
+      <div class="preloader__fill"></div>
+    </div>
+  </div>
+
+  <!-- LOGIN VIEW -->
+  <div id="login-view" style="display:none;min-height:100vh;align-items:center;justify-content:center;padding:24px;">
+    <div style="width:100%;max-width:440px;margin:0 auto;">
+      <div style="text-align:center;margin-bottom:48px;">
+          <h1 style="font-family:var(--font-title);font-size:3rem;font-weight:400;letter-spacing:0.15em;text-transform:uppercase;margin-bottom:8px;">Encriptor</h1>
+          <p style="color:var(--color-text-muted);font-size:0.875rem;">Encryption. Steganography. Privacy.</p>
+        </div>
+
+        <div class="card">
+          <div class="card__header">
+            <h2 class="card__title">Access Vault</h2>
+          </div>
+          <div style="padding:0;">
+            <div class="input-group">
+              <label for="seed-input">Seed Phrase</label>
+              <textarea id="seed-input" class="input" rows="3" placeholder="Enter your 24-word seed phrase to access your vault..." style="-webkit-text-security:disc;-moz-text-security:disc;text-security:disc;"></textarea>
+              <button type="button" id="seed-show-btn" class="btn btn--small" style="margin-top:6px;align-self:flex-start;" onclick="(function(){var ta=document.getElementById('seed-input'),btn=document.getElementById('seed-show-btn');if(ta.style.webkitTextSecurity==='disc'||ta.style.textSecurity==='disc'){ta.style.webkitTextSecurity='none';ta.style.MozTextSecurity='none';ta.style.textSecurity='none';btn.textContent='HIDE';}else{ta.style.webkitTextSecurity='disc';ta.style.MozTextSecurity='disc';ta.style.textSecurity='disc';btn.textContent='SHOW';}})()">SHOW</button>
+            </div>
+            <div id="login-error" style="display:none;color:var(--color-text);border:var(--border);padding:8px 12px;margin-bottom:16px;font-size:0.8rem;"></div>
+            <div id="login-step1" style="display:flex;gap:8px;">
+              <button id="login-btn" class="btn btn--primary" style="flex:1;">LOGIN</button>
+              <button id="register-btn" class="btn" style="flex:1;">CREATE ACCOUNT</button>
+            </div>
+
+            <!-- Step 2: Verification (PIN / TOTP) - hidden until needed -->
+            <div id="login-step2" style="display:none;">
+              <div style="border-top:var(--border-muted);padding-top:16px;margin-top:16px;">
+                <h3 style="font-family:var(--font-title);font-size:1.1rem;margin-bottom:4px;">Verification Required</h3>
+                <p style="font-size:0.75rem;color:var(--color-text-muted);margin-bottom:16px;">Your account has additional security enabled.</p>
+
+                <div class="input-group" id="login-pin-group" style="display:none;">
+                  <label for="seed-pin">PIN</label>
+                  <input type="text" id="seed-pin" class="input" placeholder="Enter your PIN" autocomplete="off" maxlength="6" data-1p-ignore="true" data-lpignore="true" data-form-type="other" style="-webkit-text-security:disc;text-security:disc;">
+                </div>
+
+                <div class="input-group" id="totp-login-group" style="display:none;">
+                  <label for="totp-login-input">Authenticator Code</label>
+                  <input type="text" id="totp-login-input" class="input" placeholder="Enter 6-digit code" autocomplete="one-time-code" maxlength="6" inputmode="numeric" style="letter-spacing:0.3em;font-size:1.1rem;text-align:center;">
+                </div>
+
+                <div style="display:flex;gap:8px;">
+                  <button id="login-verify-btn" class="btn btn--primary" style="flex:1;">VERIFY</button>
+                  <button id="login-back-btn" class="btn" style="flex:1;">BACK</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <p style="text-align:center;margin-top:24px;font-size:0.75rem;color:var(--color-text-muted);">
+          Your seed phrase is your only credential. Store it safely.
+        </p>
+      </div>
+
+    <!-- Seed Phrase Modal -->
+    <div class="modal-overlay modal-overlay--hidden" id="seed-modal">
+      <div class="modal" style="max-width:640px;">
+        <div class="modal__header">
+          <h2 class="modal__title">Your Seed Phrase</h2>
+        </div>
+        <div class="modal__body">
+          <p style="font-size:0.85rem;color:var(--color-text-muted);margin-bottom:8px;">
+            Write down these 24 words in order. This is the ONLY way to access your vault. It cannot be recovered.
+          </p>
+          <div class="seed-grid" id="seed-display"></div>
+          <p style="font-size:0.75rem;color:var(--color-text-muted);border-top:var(--border-muted);padding-top:12px;">
+            Do not share this phrase. Do not store it digitally. Anyone with these words has full access to your encrypted data.
+          </p>
+        </div>
+        <div class="modal__footer">
+          <button id="seed-copy-btn" class="btn btn--small">COPY PHRASE</button>
+          <button id="seed-continue-btn" class="btn btn--primary">I HAVE SAVED MY PHRASE</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- APP VIEW -->
+  <div id="app-view" style="display:none;">
+
+    <!-- Nav -->
+    <nav class="nav">
+      <div class="nav__logo" onclick="App.exitSettings();App.goToTab('#dashboard');" style="cursor:pointer;">Encriptor</div>
+      <button class="nav__hamburger" id="nav-hamburger" onclick="document.querySelector('.nav__tabs').classList.toggle('nav__tabs--open');document.querySelector('.nav__actions').classList.toggle('nav__actions--open')">&#9776;</button>
+      <div class="nav__tabs" id="nav-main-tabs">
+        <button class="nav__tab nav__tab--active" data-tab="#dashboard">Dashboard</button>
+        <button class="nav__tab" data-tab="#encrypt">Encrypt</button>
+        <button class="nav__tab" data-tab="#decrypt">Decrypt</button>
+      </div>
+      <!-- Settings sub-nav (hidden by default, shown when on settings page) -->
+      <div class="nav__tabs" id="nav-settings-tabs" style="display:none;">
+        <button class="nav__tab nav__tab--active" data-settings-section="settings-profile-section">Profile</button>
+        <button class="nav__tab" data-settings-section="settings-security-section">Security</button>
+        <button class="nav__tab" data-settings-section="settings-appearance-section">Appearance</button>
+        <button class="nav__tab" data-settings-section="settings-preferences-section">Preferences</button>
+        <button class="nav__tab" data-settings-section="settings-activity-section">Activity Log</button>
+        <button class="nav__tab" data-settings-section="settings-data-section">Data</button>
+        <button class="nav__tab" data-settings-section="settings-danger-section">Danger Zone</button>
+        <button class="nav__tab" onclick="App.exitSettings()" style="color:var(--color-text-muted);">&larr; Back</button>
+      </div>
+      <div class="nav__actions">
+        <span id="nav-display-name" style="font-size:0.75rem;color:var(--color-text-muted);margin-bottom:4px;">Anonymous</span>
+        <div class="btn-row">
+          <button id="logout-btn" class="btn btn--small" style="flex:3;">LOGOUT</button>
+          <button id="chat-nav-btn" class="btn btn--small" title="Chat" style="flex:1;font-size:1rem;padding:6px;">&#9993;</button>
+          <button id="settings-nav-btn" class="btn btn--small" title="Settings" style="flex:1;font-size:1.1rem;padding:6px;">&#9881;</button>
+        </div>
+      </div>
+    </nav>
+
+    <main class="main">
+
+      <!-- DASHBOARD -->
+      <section class="tab-section tab-section--active" id="dashboard-section">
+
+        <!-- Hero -->
+        <div style="padding:48px 0 40px;border-bottom:var(--border-muted);">
+          <h1 id="dash-greeting" style="font-size:2.5rem;margin-bottom:4px;">Welcome back</h1>
+          <p style="color:var(--color-text-muted);font-size:0.9rem;">Your encrypted vault at a glance.</p>
+        </div>
+
+        <!-- Stats Bar -->
+        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:0;margin:32px 0;border:var(--border-muted);">
+          <div style="padding:20px;text-align:center;border-right:var(--border-muted);">
+            <div style="font-family:var(--font-title);font-size:2rem;" id="dash-total-items">0</div>
+            <div style="font-size:0.7rem;text-transform:uppercase;letter-spacing:0.12em;color:var(--color-text-muted);margin-top:4px;">Total Items</div>
+          </div>
+          <div style="padding:20px;text-align:center;border-right:var(--border-muted);">
+            <div style="font-family:var(--font-title);font-size:2rem;" id="dash-stat-texts">0</div>
+            <div style="font-size:0.7rem;text-transform:uppercase;letter-spacing:0.12em;color:var(--color-text-muted);margin-top:4px;">Texts</div>
+          </div>
+          <div style="padding:20px;text-align:center;border-right:var(--border-muted);">
+            <div style="font-family:var(--font-title);font-size:2rem;" id="dash-stat-images">0</div>
+            <div style="font-size:0.7rem;text-transform:uppercase;letter-spacing:0.12em;color:var(--color-text-muted);margin-top:4px;">Images</div>
+          </div>
+          <div style="padding:20px;text-align:center;">
+            <div style="font-family:var(--font-title);font-size:2rem;" id="dash-stat-stegano">0</div>
+            <div style="font-size:0.7rem;text-transform:uppercase;letter-spacing:0.12em;color:var(--color-text-muted);margin-top:4px;">Stego</div>
+          </div>
+        </div>
+
+        <!-- Action Cards -->
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:40px;">
+          <div class="card" style="cursor:pointer;padding:32px;" onclick="App.goToTab('#encrypt')">
+            <div style="display:flex;justify-content:space-between;align-items:flex-start;">
+              <div>
+                <h2 style="font-size:1.5rem;margin-bottom:8px;">Encrypt</h2>
+                <p style="color:var(--color-text-muted);font-size:0.85rem;line-height:1.5;">Encrypt text, images, or hide messages inside images with steganography.</p>
+              </div>
+              <div style="font-size:2rem;opacity:0.3;">&#9998;</div>
+            </div>
+            <div style="margin-top:20px;padding-top:16px;border-top:var(--border-muted);">
+              <span style="font-size:0.75rem;text-transform:uppercase;letter-spacing:0.1em;color:var(--color-text-muted);">Text &middot; Image &middot; Steganography</span>
+            </div>
+          </div>
+          <div class="card" style="cursor:pointer;padding:32px;" onclick="App.goToTab('#decrypt')">
+            <div style="display:flex;justify-content:space-between;align-items:flex-start;">
+              <div>
+                <h2 style="font-size:1.5rem;margin-bottom:8px;">Decrypt</h2>
+                <p style="color:var(--color-text-muted);font-size:0.85rem;line-height:1.5;">Decrypt text with a key, decrypt images from .enc files, or decode stego messages.</p>
+              </div>
+              <div style="font-size:2rem;opacity:0.3;">&#9919;</div>
+            </div>
+            <div style="margin-top:20px;padding-top:16px;border-top:var(--border-muted);">
+              <span style="font-size:0.75rem;text-transform:uppercase;letter-spacing:0.1em;color:var(--color-text-muted);">Text &middot; Image &middot; Steganography</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Info Row -->
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:0;border:var(--border-muted);margin-bottom:40px;">
+          <div style="padding:16px 20px;border-right:var(--border-muted);">
+            <div style="font-size:0.7rem;text-transform:uppercase;letter-spacing:0.12em;color:var(--color-text-muted);margin-bottom:4px;">Encryption</div>
+            <div style="font-size:0.95rem;">AES-GCM</div>
+          </div>
+          <div style="padding:16px 20px;border-right:var(--border-muted);">
+            <div style="font-size:0.7rem;text-transform:uppercase;letter-spacing:0.12em;color:var(--color-text-muted);margin-bottom:4px;">Stego Method</div>
+            <div style="font-size:0.95rem;">LSB Encoding</div>
+          </div>
+          <div style="padding:16px 20px;">
+            <div style="font-size:0.7rem;text-transform:uppercase;letter-spacing:0.12em;color:var(--color-text-muted);margin-bottom:4px;">Account Age</div>
+            <div style="font-size:0.95rem;" id="dash-account-age">--</div>
+          </div>
+        </div>
+
+        <!-- Recent Activity -->
+        <div>
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+            <h2 style="font-size:1.25rem;">Recent Activity</h2>
+          </div>
+          <div id="dash-recent" class="item-list"></div>
+          <div id="dash-recent-empty" class="empty-state" style="display:none;">
+            <div class="empty-state__icon">&#9683;</div>
+            <div class="empty-state__text">No activity yet. Start by encrypting some text or an image.</div>
+          </div>
+        </div>
+
+      </section>
+
+      <!-- ══════ ENCRYPT TAB ══════ -->
+      <section class="tab-section" id="encrypt-section">
+        <div class="section-header">
+          <h1>Encrypt</h1>
+          <p>Encrypt text, images, or hide messages with steganography.</p>
+        </div>
+
+        <div class="sub-tabs" id="encrypt-sub-tabs">
+          <button class="sub-tab sub-tab--active" data-panel="enc-text-panel">Text</button>
+          <button class="sub-tab" data-panel="enc-image-panel">Image</button>
+          <button class="sub-tab" data-panel="enc-file-panel">File</button>
+          <button class="sub-tab" data-panel="enc-steg-panel">Steganography</button>
+        </div>
+
+        <!-- Text Encrypt -->
+        <div class="sub-panel" id="enc-text-panel">
+
+          <!-- Setup Row -->
+          <div class="card" style="margin-bottom:24px;">
+            <div class="card__header">
+              <h3 class="card__title">Setup</h3>
+              <span style="font-size:0.75rem;color:var(--color-text-muted);">Choose encryption type and run</span>
+            </div>
+
+            <!-- Encryption Type + Passphrase side by side -->
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px;">
+              <div class="input-group" style="margin-bottom:0;">
+                <label>Encryption Type</label>
+                <select id="text-strength" class="input">
+                  <optgroup label="AES-GCM">
+                    <option value="aes-128-gcm">AES-128-GCM</option>
+                    <option value="aes-256-gcm" selected>AES-256-GCM</option>
+                  </optgroup>
+                  <optgroup label="AES-CBC">
+                    <option value="aes-128-cbc">AES-128-CBC</option>
+                    <option value="aes-192-cbc">AES-192-CBC</option>
+                    <option value="aes-256-cbc">AES-256-CBC</option>
+                  </optgroup>
+                  <optgroup label="Stream Cipher">
+                    <option value="chacha20">ChaCha20-Poly1305</option>
+                  </optgroup>
+                  <optgroup label="Asymmetric">
+                    <option value="ecdh">ECDHE (Elliptic Curve)</option>
+                    <option value="rsa-1024">RSA-1024</option>
+                    <option value="rsa-2048">RSA-2048</option>
+                    <option value="rsa-3072">RSA-3072</option>
+                    <option value="rsa-4096">RSA-4096</option>
+                  </optgroup>
+                  <optgroup label="Hash (one-way)">
+                    <option value="sha-256">SHA-256</option>
+                    <option value="sha-384">SHA-384</option>
+                  </optgroup>
+                </select>
+              </div>
+              <div class="input-group" style="margin-bottom:0;">
+                <label style="display:flex;align-items:center;gap:8px;">
+                  Passphrase
+                  <label style="display:flex;align-items:center;gap:4px;cursor:pointer;font-size:0.75rem;color:var(--color-text-muted);">
+                    <input type="checkbox" id="text-custom-key-check" style="width:14px;height:14px;accent-color:#fff;"> Custom key
+                  </label>
+                </label>
+                <div style="display:none;gap:4px;" id="text-custom-key-wrap">
+                  <input type="text" id="text-custom-key-input" class="input" placeholder="Enter a custom passphrase..." autocomplete="off" style="flex:1;">
+                  <button class="btn btn--small" style="white-space:nowrap;" onclick="navigator.clipboard.writeText(document.getElementById('text-custom-key-input').value);Toast.show('Copied')">COPY</button>
+                </div>
+                <div style="display:flex;gap:4px;" id="text-vault-key-wrap">
+                  <input type="text" id="text-vault-key-display" class="input" placeholder="Key will appear after encryption" readonly style="flex:1;color:var(--color-text-muted);cursor:default;">
+                  <button class="btn btn--small" style="white-space:nowrap;" onclick="navigator.clipboard.writeText(document.getElementById('text-vault-key-display').value);Toast.show('Copied')">COPY</button>
+                </div>
+                <p id="text-custom-key-hint" style="display:none;font-size:0.65rem;color:var(--color-text-muted);margin-top:4px;">Anyone with this passphrase can decrypt. No seed phrase needed.</p>
+              </div>
+            </div>
+
+            <!-- Label -->
+            <div class="input-group" style="margin-bottom:16px;">
+              <label for="text-label">Label</label>
+              <input type="text" id="text-label" class="input" placeholder="Optional label for this entry...">
+            </div>
+
+            <!-- Side by side: Input + Output -->
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px;">
+              <div class="input-group" style="margin-bottom:0;">
+                <label for="text-input" style="display:flex;justify-content:space-between;align-items:center;">Enter text to encrypt <span id="text-char-counter" style="font-size:0.65rem;color:var(--color-text-muted);font-weight:400;">0 chars / 0 bytes</span></label>
+                <textarea id="text-input" class="input" rows="8" placeholder="Enter text to encrypt here"></textarea>
+              </div>
+              <div class="input-group" style="margin-bottom:0;">
+                <label style="display:flex;justify-content:space-between;align-items:center;">Encrypted output <button class="btn btn--small" onclick="navigator.clipboard.writeText(document.getElementById('text-output-display').value);Toast.show('Copied')" style="font-size:0.65rem;">COPY</button></label>
+                <textarea id="text-output-display" class="input" rows="8" placeholder="Encrypted value will appear here" readonly style="color:var(--color-text-muted);cursor:default;"></textarea>
+              </div>
+            </div>
+
+            <!-- Actions -->
+            <div style="border-top:var(--border-muted);padding-top:16px;display:flex;justify-content:center;gap:12px;flex-direction:column;align-items:center;">
+              <button id="text-encrypt-btn" class="btn btn--primary" style="min-width:200px;">ENCRYPT</button>
+              <button id="text-save-btn" class="btn btn--small" style="display:none;">SAVE TO VAULT</button>
+              <p id="text-encrypt-hint" style="font-size:0.75rem;color:var(--color-text-muted);">Enter input text and select encryption type to enable encryption.</p>
+            </div>
+          </div>
+
+          <h2 style="font-size:1.25rem;margin:24px 0 16px;">Saved Texts</h2>
+          <div style="display:flex;gap:8px;margin-bottom:12px;">
+            <input type="text" class="input" placeholder="Search saved entries..." style="flex:1;" onkeyup="TextTab.filterList(this.value)">
+            <button class="btn btn--small btn--danger" onclick="TextTab.deleteAll()">DELETE ALL</button>
+          </div>
+          <div id="text-list" class="item-list"></div>
+          <div id="text-empty" class="empty-state" style="display:none;">
+            <div class="empty-state__icon">&#9683;</div>
+            <div class="empty-state__text">No encrypted texts yet</div>
+          </div>
+        </div>
+
+        <!-- Image Encrypt -->
+        <div class="sub-panel" id="enc-image-panel" style="display:none;">
+          <div class="card">
+            <div class="card__header">
+              <h3 class="card__title">Setup</h3>
+              <span style="font-size:0.75rem;color:var(--color-text-muted);">Choose encryption type and run</span>
+            </div>
+
+            <!-- Row 1: Encryption type + Passphrase -->
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px;">
+              <div class="input-group" style="margin-bottom:0;">
+                <label>Encryption Type</label>
+                <select id="image-strength" class="input">
+                  <optgroup label="AES-GCM">
+                    <option value="aes-128-gcm">AES-128-GCM</option>
+                    <option value="aes-256-gcm" selected>AES-256-GCM</option>
+                  </optgroup>
+                  <optgroup label="AES-CBC">
+                    <option value="aes-128-cbc">AES-128-CBC</option>
+                    <option value="aes-192-cbc">AES-192-CBC</option>
+                    <option value="aes-256-cbc">AES-256-CBC</option>
+                  </optgroup>
+                  <optgroup label="Stream Cipher">
+                    <option value="chacha20">ChaCha20-Poly1305</option>
+                  </optgroup>
+                  <optgroup label="Asymmetric">
+                    <option value="ecdh">ECDHE (Elliptic Curve)</option>
+                    <option value="rsa-1024">RSA-1024</option>
+                    <option value="rsa-2048">RSA-2048</option>
+                    <option value="rsa-3072">RSA-3072</option>
+                    <option value="rsa-4096">RSA-4096</option>
+                  </optgroup>
+                </select>
+              </div>
+              <div class="input-group" style="margin-bottom:0;">
+                <label style="display:flex;align-items:center;gap:8px;">
+                  Passphrase
+                  <label style="display:flex;align-items:center;gap:4px;cursor:pointer;font-size:0.75rem;color:var(--color-text-muted);">
+                    <input type="checkbox" id="image-custom-key-check" style="width:14px;height:14px;accent-color:#fff;"> Custom key
+                  </label>
+                </label>
+                <div style="display:none;gap:4px;" id="image-custom-key-wrap">
+                  <input type="text" id="image-custom-key-input" class="input" placeholder="Enter a custom passphrase..." autocomplete="off" style="flex:1;">
+                  <button class="btn btn--small" style="white-space:nowrap;" onclick="navigator.clipboard.writeText(document.getElementById('image-custom-key-input').value);Toast.show('Copied')">COPY</button>
+                </div>
+                <div style="display:flex;gap:4px;" id="image-vault-key-wrap">
+                  <input type="text" id="image-vault-key-display" class="input" placeholder="Key will appear after encryption" readonly style="flex:1;color:var(--color-text-muted);cursor:default;">
+                  <button class="btn btn--small" style="white-space:nowrap;" onclick="navigator.clipboard.writeText(document.getElementById('image-vault-key-display').value);Toast.show('Copied')">COPY</button>
+                </div>
+              </div>
+            </div>
+
+            <!-- Label -->
+            <div class="input-group" style="margin-bottom:16px;">
+              <label for="image-label">Label</label>
+              <input type="text" id="image-label" class="input" placeholder="Optional label for this entry...">
+            </div>
+
+            <!-- Side by side: Upload + Encrypted output -->
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px;">
+              <div class="input-group" style="margin-bottom:0;">
+                <label>Select image to encrypt</label>
+                <div class="drop-zone" id="image-drop-zone" style="min-height:150px;">
+                  <div class="drop-zone__icon">&#8593;</div>
+                  <div class="drop-zone__text">Drop image or <span>browse</span></div>
+                  <div class="drop-zone__text" style="font-size:11px;">Max 10MB</div>
+                  <input type="file" id="image-file-input" accept="image/*">
+                </div>
+                <div id="image-preview" style="display:none;">
+                  <div style="display:flex;align-items:center;gap:12px;padding:12px;border:var(--border-muted);">
+                    <img id="image-preview-img" style="width:60px;height:60px;object-fit:cover;border:var(--border-muted);">
+                    <span id="image-file-name" style="font-size:0.8rem;color:var(--color-text-muted);"></span>
+                  </div>
+                </div>
+              </div>
+              <div class="input-group" style="margin-bottom:0;">
+                <label>Encrypted output</label>
+                <div id="image-enc-output" style="min-height:150px;border:var(--border-muted);padding:16px;display:flex;align-items:center;justify-content:center;color:var(--color-text-muted);font-size:0.85rem;">
+                  Encrypted .enc file will auto-download
+                </div>
+              </div>
+            </div>
+
+            <!-- Actions -->
+            <div style="border-top:var(--border-muted);padding-top:16px;display:flex;justify-content:center;gap:12px;flex-direction:column;align-items:center;">
+              <button id="image-encrypt-btn" class="btn btn--primary" style="min-width:200px;">ENCRYPT</button>
+              <p style="font-size:0.75rem;color:var(--color-text-muted);">Select an image and encryption type to enable encryption.</p>
+            </div>
+          </div>
+
+          <h2 style="font-size:1.25rem;margin:24px 0 16px;">Encrypted Images</h2>
+          <div style="display:flex;gap:8px;margin-bottom:12px;">
+            <input type="text" class="input" placeholder="Search saved entries..." style="flex:1;" onkeyup="ImageTab.filterList(this.value)">
+            <button class="btn btn--small btn--danger" onclick="ImageTab.deleteAll()">DELETE ALL</button>
+          </div>
+          <div id="image-grid" class="image-grid"></div>
+          <div id="image-empty" class="empty-state" style="display:none;">
+            <div class="empty-state__icon">&#9638;</div>
+            <div class="empty-state__text">No encrypted images yet</div>
+          </div>
+        </div>
+
+
+        <!-- File Encrypt -->
+        <div class="sub-panel" id="enc-file-panel" style="display:none;">
+          <div class="card">
+            <div class="card__header">
+              <h3 class="card__title">Setup</h3>
+              <span style="font-size:0.75rem;color:var(--color-text-muted);">Encrypt any file up to 50MB</span>
+            </div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px;">
+              <div class="input-group" style="margin-bottom:0;">
+                <label>Encryption Type</label>
+                <select id="file-strength" class="input">
+                  <optgroup label="AES-GCM"><option value="aes-128-gcm">AES-128-GCM</option><option value="aes-256-gcm" selected>AES-256-GCM</option></optgroup>
+                  <optgroup label="AES-CBC"><option value="aes-128-cbc">AES-128-CBC</option><option value="aes-192-cbc">AES-192-CBC</option><option value="aes-256-cbc">AES-256-CBC</option></optgroup>
+                  <optgroup label="Stream Cipher"><option value="chacha20">ChaCha20-Poly1305</option></optgroup>
+                    <option value="rsa-1024">RSA-1024</option>
+                    <option value="rsa-2048">RSA-2048</option>
+                    <option value="rsa-3072">RSA-3072</option>
+                    <option value="rsa-4096">RSA-4096</option></optgroup>
+                </select>
+              </div>
+              <div class="input-group" style="margin-bottom:0;">
+                <label style="display:flex;align-items:center;gap:8px;">Passphrase <label style="display:flex;align-items:center;gap:4px;cursor:pointer;font-size:0.75rem;color:var(--color-text-muted);"><input type="checkbox" id="file-custom-key-check" style="width:14px;height:14px;accent-color:#fff;"> Custom key</label></label>
+                <div style="display:none;gap:4px;" id="file-custom-key-wrap"><input type="text" id="file-custom-key-input" class="input" placeholder="Enter a custom passphrase..." autocomplete="off" style="flex:1;"><button class="btn btn--small" style="white-space:nowrap;" onclick="navigator.clipboard.writeText(document.getElementById('file-custom-key-input').value);Toast.show('Copied')">COPY</button></div>
+                <div style="display:flex;gap:4px;" id="file-vault-key-wrap"><input type="text" id="file-vault-key-display" class="input" placeholder="Key will appear after encryption" readonly style="flex:1;color:var(--color-text-muted);cursor:default;"><button class="btn btn--small" style="white-space:nowrap;" onclick="navigator.clipboard.writeText(document.getElementById('file-vault-key-display').value);Toast.show('Copied')">COPY</button></div>
+              </div>
+            </div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px;">
+              <div class="input-group" style="margin-bottom:0;">
+                <label>Select file to encrypt</label>
+                <div class="drop-zone" id="file-drop-zone" style="min-height:150px;"><div class="drop-zone__icon">&#8593;</div><div class="drop-zone__text">Drop any file or <span>browse</span></div><div class="drop-zone__text" style="font-size:11px;">Max 50MB</div><input type="file" id="file-file-input"></div>
+                <div id="file-preview" style="display:none;"><div style="display:flex;align-items:center;justify-content:space-between;padding:12px;border:var(--border-muted);"><div><div id="file-file-name" style="font-size:0.85rem;"></div><div id="file-file-size" style="font-size:0.75rem;color:var(--color-text-muted);"></div></div><button class="btn btn--small btn--danger" onclick="FileTab.clearFile()">REMOVE</button></div></div>
+              </div>
+              <div class="input-group" style="margin-bottom:0;">
+                <label>Encrypted output</label>
+                <div id="file-enc-output" style="min-height:150px;border:var(--border-muted);padding:16px;display:flex;align-items:center;justify-content:center;color:var(--color-text-muted);font-size:0.85rem;">Encrypted .enc file will auto-download</div>
+              </div>
+            </div>
+            <div style="border-top:var(--border-muted);padding-top:16px;display:flex;justify-content:center;">
+              <button id="file-encrypt-btn" class="btn btn--primary" style="min-width:200px;" disabled>ENCRYPT</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Steganography Encode -->
+        <div class="sub-panel" id="enc-steg-panel" style="display:none;">
+          <div class="card" style="margin-bottom:24px;">
+            <div class="input-group">
+              <label>Carrier Image</label>
+              <div class="drop-zone" id="steg-encode-drop">
+                <div class="drop-zone__icon">&#8593;</div>
+                <div class="drop-zone__text">Drop carrier image or <span>browse</span></div>
+                <div class="drop-zone__text" style="font-size:11px;">PNG recommended for best results</div>
+                <input type="file" id="steg-encode-file" accept="image/*">
+              </div>
+            </div>
+            <div id="steg-encode-preview" style="display:none;margin-bottom:16px;">
+              <div style="display:flex;align-items:center;gap:12px;">
+                <img id="steg-encode-preview-img" style="width:80px;height:80px;object-fit:cover;border:var(--border-muted);">
+                <span id="steg-encode-file-name" style="font-size:0.85rem;color:var(--color-text-muted);"></span>
+              </div>
+            </div>
+            <div class="input-group">
+              <label for="steg-encode-message">Secret Message</label>
+              <textarea id="steg-encode-message" class="input" rows="4" placeholder="Type your secret message..."></textarea>
+            </div>
+            <div class="input-group">
+              <label>Encryption Strength</label>
+              <select id="steg-encode-strength" class="input">
+                  <optgroup label="AES-GCM">
+                    <option value="aes-128-gcm">AES-128-GCM</option>
+                    <option value="aes-256-gcm" selected>AES-256-GCM</option>
+                  </optgroup>
+                  <optgroup label="AES-CBC">
+                    <option value="aes-128-cbc">AES-128-CBC</option>
+                    <option value="aes-192-cbc">AES-192-CBC</option>
+                    <option value="aes-256-cbc">AES-256-CBC</option>
+                  </optgroup>
+                  <optgroup label="Stream Cipher">
+                    <option value="chacha20">ChaCha20-Poly1305</option>
+                  </optgroup>
+                  <optgroup label="Asymmetric">
+                    <option value="ecdh">ECDHE (Elliptic Curve)</option>
+                    <option value="rsa-1024">RSA-1024</option>
+                    <option value="rsa-2048">RSA-2048</option>
+                    <option value="rsa-3072">RSA-3072</option>
+                    <option value="rsa-4096">RSA-4096</option>
+                  </optgroup>
+                </select>
+            </div>
+            <div id="steg-encode-capacity" style="margin-bottom:16px;"></div>
+            <div class="input-group">
+              <label for="steg-encode-label">Label (for saving)</label>
+              <input type="text" id="steg-encode-label" class="input" placeholder="Optional label...">
+            </div>
+            <div class="input-group">
+              <label style="display:flex;align-items:center;gap:8px;cursor:pointer;">
+                <input type="checkbox" id="steg-custom-key-check" style="width:16px;height:16px;accent-color:#fff;"> Use Custom Key
+              </label>
+              <div style="display:none;gap:4px;margin-top:8px;" id="steg-custom-key-wrap">
+                <input type="text" id="steg-custom-key-input" class="input" placeholder="Enter a custom passphrase..." autocomplete="off" style="flex:1;">
+                <button class="btn btn--small" style="white-space:nowrap;" onclick="navigator.clipboard.writeText(document.getElementById('steg-custom-key-input').value);Toast.show('Copied')">COPY</button>
+              </div>
+            </div>
+            <button id="steg-encode-btn" class="btn btn--primary" disabled>ENCODE & ENCRYPT</button>
+          </div>
+          <h2 style="font-size:1.25rem;margin:24px 0 16px;">Saved Stego Images</h2>
+          <div style="display:flex;gap:8px;margin-bottom:12px;">
+            <input type="text" class="input" placeholder="Search saved entries..." style="flex:1;" onkeyup="SteganoTab.filterList(this.value)">
+            <button class="btn btn--small btn--danger" onclick="SteganoTab.deleteAll()">DELETE ALL</button>
+          </div>
+          <div id="steg-list" class="item-list"></div>
+          <div id="steg-empty" class="empty-state" style="display:none;">
+            <div class="empty-state__icon">&#9673;</div>
+            <div class="empty-state__text">No steganography images saved yet</div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ══════ DECRYPT TAB ══════ -->
+      <section class="tab-section" id="decrypt-section">
+        <div class="section-header">
+          <h1>Decrypt</h1>
+          <p>Decrypt text, images, or decode steganography messages.</p>
+        </div>
+
+        <div class="sub-tabs" id="decrypt-sub-tabs">
+          <button class="sub-tab sub-tab--active" data-panel="dec-text-panel">Text</button>
+          <button class="sub-tab" data-panel="dec-image-panel">Image</button>
+          <button class="sub-tab" data-panel="dec-file-panel">File</button>
+          <button class="sub-tab" data-panel="dec-steg-panel">Steganography</button>
+        </div>
+
+        <!-- Text Decrypt -->
+        <div class="sub-panel" id="dec-text-panel">
+          <div class="card">
+            <div class="card__header">
+              <h3 class="card__title">Setup</h3>
+              <span style="font-size:0.75rem;color:var(--color-text-muted);">Choose decryption type and run</span>
+            </div>
+
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px;">
+              <div class="input-group" style="margin-bottom:0;">
+                <label>Decryption Type</label>
+                <select id="text-manual-strength" class="input">
+                  <optgroup label="AES-GCM">
+                    <option value="aes-128-gcm">AES-128-GCM</option>
+                    <option value="aes-256-gcm" selected>AES-256-GCM</option>
+                  </optgroup>
+                  <optgroup label="AES-CBC">
+                    <option value="aes-128-cbc">AES-128-CBC</option>
+                    <option value="aes-192-cbc">AES-192-CBC</option>
+                    <option value="aes-256-cbc">AES-256-CBC</option>
+                  </optgroup>
+                  <optgroup label="Stream Cipher">
+                    <option value="chacha20">ChaCha20-Poly1305</option>
+                  </optgroup>
+                  <optgroup label="Asymmetric">
+                    <option value="ecdh">ECDHE (Elliptic Curve)</option>
+                    <option value="rsa-1024">RSA-1024</option>
+                    <option value="rsa-2048">RSA-2048</option>
+                    <option value="rsa-3072">RSA-3072</option>
+                    <option value="rsa-4096">RSA-4096</option>
+                  </optgroup>
+                </select>
+              </div>
+              <div class="input-group" style="margin-bottom:0;" id="text-dec-key-section">
+                <label style="display:flex;align-items:center;gap:8px;">
+                  Key
+                  <label style="display:flex;align-items:center;gap:4px;cursor:pointer;font-size:0.75rem;color:var(--color-text-muted);">
+                    <input type="checkbox" id="text-dec-custom-check" style="width:14px;height:14px;accent-color:#fff;"> Custom key
+                  </label>
+                </label>
+                <div style="display:flex;gap:4px;" id="text-dec-vault-wrap">
+                  <input type="text" id="text-manual-key" class="input" placeholder="Paste the key (IV) here..." autocomplete="off" style="flex:1;">
+                  <button class="btn btn--small" style="white-space:nowrap;" onclick="navigator.clipboard.readText().then(t=>{document.getElementById('text-manual-key').value=t;Toast.show('Pasted')})">PASTE</button>
+                </div>
+                <div style="display:none;gap:4px;" id="text-dec-custom-wrap">
+                  <input type="text" id="text-dec-custom-input" class="input" placeholder="Enter the custom passphrase..." autocomplete="off" style="flex:1;">
+                  <button class="btn btn--small" style="white-space:nowrap;" onclick="navigator.clipboard.readText().then(t=>{document.getElementById('text-dec-custom-input').value=t;Toast.show('Pasted')})">PASTE</button>
+                </div>
+              </div>
+            </div>
+
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px;">
+              <div class="input-group" style="margin-bottom:0;">
+                <label for="text-manual-cipher">Encrypted text</label>
+                <textarea id="text-manual-cipher" class="input" rows="8" placeholder="Paste encrypted ciphertext here"></textarea>
+              </div>
+              <div class="input-group" style="margin-bottom:0;">
+                <label>Decrypted output</label>
+                <textarea id="text-manual-result" class="input" rows="8" placeholder="Decrypted value will appear here" readonly style="color:var(--color-text-muted);cursor:default;"></textarea>
+              </div>
+            </div>
+
+            <div style="border-top:var(--border-muted);padding-top:16px;display:flex;justify-content:center;gap:12px;flex-direction:column;align-items:center;">
+              <button id="text-manual-decrypt-btn" class="btn btn--primary" style="min-width:200px;">DECRYPT</button>
+              <button id="text-dec-copy-btn" class="btn btn--small" style="display:none;" onclick="navigator.clipboard.writeText(document.getElementById('text-manual-result').value);Toast.show('Copied')">COPY DECRYPTED TEXT</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Image Decrypt -->
+        <div class="sub-panel" id="dec-image-panel" style="display:none;">
+          <div class="card">
+            <div class="card__header">
+              <h3 class="card__title">Setup</h3>
+              <span style="font-size:0.75rem;color:var(--color-text-muted);">Upload encrypted file and decrypt</span>
+            </div>
+
+            <!-- Row 1: Decryption type + Key -->
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px;">
+              <div class="input-group" style="margin-bottom:0;">
+                <label>Decryption Type</label>
+                <select id="dec-image-strength" class="input">
+                  <optgroup label="AES-GCM">
+                    <option value="aes-128-gcm">AES-128-GCM</option>
+                    <option value="aes-256-gcm" selected>AES-256-GCM</option>
+                  </optgroup>
+                  <optgroup label="AES-CBC">
+                    <option value="aes-128-cbc">AES-128-CBC</option>
+                    <option value="aes-192-cbc">AES-192-CBC</option>
+                    <option value="aes-256-cbc">AES-256-CBC</option>
+                  </optgroup>
+                  <optgroup label="Stream Cipher">
+                    <option value="chacha20">ChaCha20-Poly1305</option>
+                  </optgroup>
+                  <optgroup label="Asymmetric">
+                    <option value="ecdh">ECDHE (Elliptic Curve)</option>
+                    <option value="rsa-1024">RSA-1024</option>
+                    <option value="rsa-2048">RSA-2048</option>
+                    <option value="rsa-3072">RSA-3072</option>
+                    <option value="rsa-4096">RSA-4096</option>
+                  </optgroup>
+                </select>
+              </div>
+              <div class="input-group" style="margin-bottom:0;">
+                <label style="display:flex;align-items:center;gap:8px;">
+                  Key
+                  <label style="display:flex;align-items:center;gap:4px;cursor:pointer;font-size:0.75rem;color:var(--color-text-muted);">
+                    <input type="checkbox" id="dec-image-custom-check" style="width:14px;height:14px;accent-color:#fff;"> Custom key
+                  </label>
+                </label>
+                <div style="display:flex;gap:4px;" id="dec-image-vault-wrap">
+                  <input type="text" id="dec-image-key" class="input" placeholder="Paste the key (IV) here..." autocomplete="off" style="flex:1;">
+                  <button class="btn btn--small" style="white-space:nowrap;" onclick="navigator.clipboard.readText().then(t=>{document.getElementById('dec-image-key').value=t;Toast.show('Pasted')})">PASTE</button>
+                </div>
+                <div style="display:none;gap:4px;" id="dec-image-custom-wrap">
+                  <input type="text" id="dec-image-custom-input" class="input" placeholder="Enter the custom passphrase..." autocomplete="off" style="flex:1;">
+                  <button class="btn btn--small" style="white-space:nowrap;" onclick="navigator.clipboard.readText().then(t=>{document.getElementById('dec-image-custom-input').value=t;Toast.show('Pasted')})">PASTE</button>
+                </div>
+              </div>
+            </div>
+
+            <!-- Row 2: Format + File upload side by side -->
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px;">
+              <div class="input-group" style="margin-bottom:0;">
+                <label>Original Format</label>
+                <select id="dec-image-mime-val" class="input">
+                  <option value="image/png" selected>PNG</option>
+                  <option value="image/jpeg">JPG</option>
+                  <option value="image/webp">WEBP</option>
+                </select>
+              </div>
+              <div class="input-group" style="margin-bottom:0;">
+                <label>Encrypted File (.enc)</label>
+                <div class="drop-zone" id="dec-image-drop" style="padding:16px;">
+                  <div class="drop-zone__text">Drop .enc file or <span>browse</span></div>
+                  <input type="file" id="dec-image-file">
+                </div>
+                <div id="dec-image-file-info" style="display:none;"></div>
+              </div>
+            </div>
+
+            <!-- Decrypted image output -->
+            <div id="dec-image-output" style="display:none;margin-bottom:16px;">
+              <div style="display:grid;grid-template-columns:1fr auto;gap:16px;align-items:start;">
+                <div>
+                  <label style="font-size:0.75rem;text-transform:uppercase;letter-spacing:0.1em;color:var(--color-text-muted);display:block;margin-bottom:4px;">Decrypted Image</label>
+                  <img id="dec-image-preview" style="width:100%;max-height:300px;object-fit:contain;border:var(--border-muted);">
+                </div>
+                <div style="display:flex;flex-direction:column;gap:8px;padding-top:20px;">
+                  <button id="dec-image-download" class="btn btn--small btn--primary">DOWNLOAD</button>
+                </div>
+              </div>
+            </div>
+
+            <div style="border-top:var(--border-muted);padding-top:16px;display:flex;justify-content:center;">
+              <button id="dec-image-btn" class="btn btn--primary" style="min-width:200px;" disabled>DECRYPT</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Stegano Decode -->
+
+        <!-- File Decrypt -->
+        <div class="sub-panel" id="dec-file-panel" style="display:none;">
+          <div class="card">
+            <div class="card__header">
+              <h3 class="card__title">Setup</h3>
+              <span style="font-size:0.75rem;color:var(--color-text-muted);">Upload encrypted .enc file and decrypt</span>
+            </div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px;">
+              <div class="input-group" style="margin-bottom:0;">
+                <label>Decryption Type</label>
+                <select id="dec-file-strength" class="input">
+                  <optgroup label="AES-GCM"><option value="aes-128-gcm">AES-128-GCM</option><option value="aes-256-gcm" selected>AES-256-GCM</option></optgroup>
+                  <optgroup label="AES-CBC"><option value="aes-128-cbc">AES-128-CBC</option><option value="aes-192-cbc">AES-192-CBC</option><option value="aes-256-cbc">AES-256-CBC</option></optgroup>
+                  <optgroup label="Stream Cipher"><option value="chacha20">ChaCha20-Poly1305</option></optgroup>
+                    <option value="rsa-1024">RSA-1024</option>
+                    <option value="rsa-2048">RSA-2048</option>
+                    <option value="rsa-3072">RSA-3072</option>
+                    <option value="rsa-4096">RSA-4096</option></optgroup>
+                </select>
+              </div>
+              <div class="input-group" style="margin-bottom:0;">
+                <label style="display:flex;align-items:center;gap:8px;">Key <label style="display:flex;align-items:center;gap:4px;cursor:pointer;font-size:0.75rem;color:var(--color-text-muted);"><input type="checkbox" id="dec-file-custom-check" style="width:14px;height:14px;accent-color:#fff;"> Custom key</label></label>
+                <div style="display:flex;gap:4px;" id="dec-file-vault-wrap"><input type="text" id="dec-file-key" class="input" placeholder="Paste the key (IV) here..." autocomplete="off" style="flex:1;"><button class="btn btn--small" style="white-space:nowrap;" onclick="navigator.clipboard.readText().then(t=>{document.getElementById('dec-file-key').value=t;Toast.show('Pasted')})">PASTE</button></div>
+                <div style="display:none;gap:4px;" id="dec-file-custom-wrap"><input type="text" id="dec-file-custom-input" class="input" placeholder="Enter the custom passphrase..." autocomplete="off" style="flex:1;"><button class="btn btn--small" style="white-space:nowrap;" onclick="navigator.clipboard.readText().then(t=>{document.getElementById('dec-file-custom-input').value=t;Toast.show('Pasted')})">PASTE</button></div>
+              </div>
+            </div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px;">
+              <div class="input-group" style="margin-bottom:0;">
+                <label>Encrypted File (.enc)</label>
+                <div class="drop-zone" id="dec-file-drop" style="min-height:150px;"><div class="drop-zone__icon">&#8593;</div><div class="drop-zone__text">Drop .enc file or <span>browse</span></div><input type="file" id="dec-file-input"></div>
+                <div id="dec-file-info" style="display:none;"></div>
+              </div>
+              <div class="input-group" style="margin-bottom:0;">
+                <label>Decrypted output</label>
+                <div id="dec-file-output" style="min-height:150px;border:var(--border-muted);padding:16px;display:flex;align-items:center;justify-content:center;color:var(--color-text-muted);font-size:0.85rem;">Decrypted file will appear here with download</div>
+              </div>
+            </div>
+            <div style="border-top:var(--border-muted);padding-top:16px;display:flex;justify-content:center;">
+              <button id="dec-file-btn" class="btn btn--primary" style="min-width:200px;" disabled>DECRYPT</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="sub-panel" id="dec-steg-panel" style="display:none;">
+          <div class="card" style="margin-bottom:24px;">
+            <div class="input-group">
+              <label>Stego Image</label>
+              <div class="drop-zone" id="steg-decode-drop">
+                <div class="drop-zone__icon">&#8595;</div>
+                <div class="drop-zone__text">Drop stego image or <span>browse</span></div>
+                <div class="drop-zone__text" style="font-size:11px;">Must be PNG (lossless) to preserve hidden data</div>
+                <input type="file" id="steg-decode-file" accept="image/png">
+              </div>
+            </div>
+            <div id="steg-decode-preview" style="display:none;margin-bottom:16px;">
+              <div style="display:flex;align-items:center;gap:12px;">
+                <img id="steg-decode-preview-img" style="width:80px;height:80px;object-fit:cover;border:var(--border-muted);">
+                <span id="steg-decode-file-name" style="font-size:0.85rem;color:var(--color-text-muted);"></span>
+              </div>
+            </div>
+            <div class="input-group">
+              <label for="steg-decode-key">Key (IV)</label>
+              <input type="text" id="steg-decode-key" class="input" placeholder="Paste the key from the encode step..." autocomplete="off">
+            </div>
+            <div class="input-group">
+              <label>Encryption Strength</label>
+              <select id="steg-decode-strength" class="input">
+                  <optgroup label="AES-GCM">
+                    <option value="aes-128-gcm">AES-128-GCM</option>
+                    <option value="aes-256-gcm" selected>AES-256-GCM</option>
+                  </optgroup>
+                  <optgroup label="AES-CBC">
+                    <option value="aes-128-cbc">AES-128-CBC</option>
+                    <option value="aes-192-cbc">AES-192-CBC</option>
+                    <option value="aes-256-cbc">AES-256-CBC</option>
+                  </optgroup>
+                  <optgroup label="Stream Cipher">
+                    <option value="chacha20">ChaCha20-Poly1305</option>
+                  </optgroup>
+                  <optgroup label="Asymmetric">
+                    <option value="ecdh">ECDHE (Elliptic Curve)</option>
+                    <option value="rsa-1024">RSA-1024</option>
+                    <option value="rsa-2048">RSA-2048</option>
+                    <option value="rsa-3072">RSA-3072</option>
+                    <option value="rsa-4096">RSA-4096</option>
+                  </optgroup>
+                </select>
+            </div>
+            <button id="steg-decode-btn" class="btn btn--primary" disabled>DECODE & DECRYPT</button>
+          </div>
+          <div id="steg-decode-result" class="card" style="display:none;">
+            <div class="card__header">
+              <h3 class="card__title">Hidden Message</h3>
+            </div>
+            <pre id="steg-decode-result-text" style="white-space:pre-wrap;word-break:break-word;font-family:'Courier New',monospace;font-size:0.875rem;line-height:1.6;"></pre>
+          </div>
+        </div>
+      </section>
+
+      <!-- Image Viewer Modal -->
+      <div class="modal-overlay modal-overlay--hidden" id="image-viewer">
+        <div class="modal" style="max-width:800px;">
+          <div class="modal__header">
+            <h2 class="modal__title" id="image-viewer-label">Decrypted Image</h2>
+            <div style="display:flex;gap:8px;align-items:center;">
+              <span id="image-viewer-strength" style="font-size:0.7rem;color:var(--color-text-muted);"></span>
+              <button id="image-viewer-download" class="btn btn--small btn--primary" style="display:none;" onclick="ImageTab.downloadDecrypted()">DOWNLOAD</button>
+              <button id="image-viewer-raw" class="btn btn--small" style="display:none;" onclick="ImageTab.toggleRawView()">SHOW ENCRYPTED</button>
+              <button id="image-viewer-close" class="btn btn--small">CLOSE</button>
+            </div>
+          </div>
+          <div class="modal__body" style="padding:0;position:relative;">
+            <div id="image-viewer-badge" style="position:absolute;top:12px;left:12px;background:#000;border:1px solid #333;padding:4px 10px;font-size:0.7rem;text-transform:uppercase;letter-spacing:0.1em;z-index:1;">Decrypted</div>
+            <img id="image-viewer-img" style="width:100%;display:block;">
+            <canvas id="image-viewer-raw-canvas" style="width:100%;display:none;"></canvas>
+          </div>
+        </div>
+      </div>
+
+      <!-- CHAT -->
+      <section class="tab-section" id="chat-section">
+        <div style="display:grid;grid-template-columns:280px 1fr;gap:0;height:calc(100vh - 120px);border:var(--border);">
+          <!-- Left: Conversations -->
+          <div style="border-right:var(--border);display:flex;flex-direction:column;overflow:hidden;">
+            <div style="padding:16px;border-bottom:var(--border-muted);position:relative;">
+              <h2 style="font-size:1.1rem;margin-bottom:12px;">Messages</h2>
+              <input type="text" id="chat-search" class="input" placeholder="Search @username..." autocomplete="off" style="font-size:0.85rem;">
+              <div id="chat-search-results" style="display:none;"></div>
+            </div>
+            <div id="chat-conv-list" style="flex:1;overflow-y:auto;scrollbar-width:thin;scrollbar-color:var(--color-text-muted) var(--color-surface);"></div>
+          </div>
+          <!-- Right: Messages -->
+          <div style="display:flex;flex-direction:column;overflow:hidden;">
+            <div id="chat-header" style="padding:12px 16px;border-bottom:var(--border-muted);font-weight:500;">
+              Select a conversation
+            </div>
+            <div id="chat-messages" style="flex:1;overflow-y:auto;padding:16px;scrollbar-width:thin;scrollbar-color:var(--color-text-muted) var(--color-surface);"></div>
+            <div id="chat-input-area" style="display:none;padding:12px 16px;border-top:var(--border-muted);">
+              <div style="display:flex;gap:8px;">
+                <input type="text" id="chat-message-input" class="input" placeholder="Type a message..." autocomplete="off" style="flex:1;">
+                <button id="chat-send-btn" class="btn btn--small btn--primary">SEND</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- SETTINGS -->
+      <section class="tab-section" id="settings-section">
+
+
+        <!-- Profile Card -->
+        <div class="settings-sub" id="settings-profile-section">
+        <div class="card" style="padding:32px;margin-bottom:24px;">
+          <h2 style="font-size:1.25rem;margin-bottom:24px;padding-bottom:16px;border-bottom:var(--border-muted);">Profile</h2>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:24px;">
+            <div>
+              <div class="input-group" style="margin-bottom:16px;">
+                <label for="settings-display-name">Display Name</label>
+                <div style="display:flex;gap:8px;">
+                  <input type="text" id="settings-display-name" class="input" placeholder="Anonymous" autocomplete="off">
+                  <button id="settings-save-name" class="btn btn--small" style="white-space:nowrap;">SAVE</button>
+                </div>
+              </div>
+              <div class="input-group">
+                <label for="settings-unique-id">Username</label>
+                <div style="display:flex;gap:8px;align-items:center;">
+                  <span style="color:var(--color-text-muted);font-size:1rem;">@</span>
+                  <input type="text" id="settings-unique-id" class="input" placeholder="username" autocomplete="off" maxlength="30" style="flex:1;">
+                  <button id="settings-save-uid" class="btn btn--small" style="white-space:nowrap;">SAVE</button>
+                </div>
+                <div style="font-size:0.65rem;color:var(--color-text-muted);margin-top:4px;">3-30 characters. Letters, numbers, underscores, dots. Case-sensitive.</div>
+              </div>
+            </div>
+            <div>
+              <div style="margin-bottom:16px;">
+                <div style="font-size:0.7rem;text-transform:uppercase;letter-spacing:0.12em;color:var(--color-text-muted);margin-bottom:4px;">Account ID</div>
+                <code id="settings-user-hash" style="font-size:0.85rem;color:var(--color-text-muted);"></code>
+              </div>
+              <div>
+                <div style="font-size:0.7rem;text-transform:uppercase;letter-spacing:0.12em;color:var(--color-text-muted);margin-bottom:4px;">Member Since</div>
+                <span id="settings-created-at" style="font-size:0.85rem;"></span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Timezone -->
+        <div class="card" style="padding:32px;margin-bottom:24px;">
+          <h2 style="font-size:1.25rem;margin-bottom:24px;padding-bottom:16px;border-bottom:var(--border-muted);">Timezone</h2>
+          <div style="display:flex;justify-content:space-between;align-items:center;">
+            <div>
+              <div style="font-size:0.9rem;font-weight:500;">Your Timezone</div>
+              <div style="font-size:0.75rem;color:var(--color-text-muted);margin-top:2px;">Used for activity log and timestamps</div>
+            </div>
+            <input type="text" id="settings-timezone" class="input" style="width:320px;" placeholder="Search timezone..." autocomplete="off" readonly>
+          </div>
+          <div style="margin-top:12px;font-size:0.8rem;color:var(--color-text-muted);">
+            Current time: <span id="settings-current-time" style="color:var(--color-text);"></span>
+          </div>
+        </div>
+
+        <!-- Session Info -->
+        <div class="card" style="padding:32px;margin-bottom:24px;">
+          <h2 style="font-size:1.25rem;margin-bottom:24px;padding-bottom:16px;border-bottom:var(--border-muted);">Session</h2>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+            <div>
+              <div style="font-size:0.7rem;text-transform:uppercase;letter-spacing:0.12em;color:var(--color-text-muted);margin-bottom:4px;">Logged In</div>
+              <span id="session-login-time" style="font-size:0.85rem;">--</span>
+            </div>
+            <div>
+              <div style="font-size:0.7rem;text-transform:uppercase;letter-spacing:0.12em;color:var(--color-text-muted);margin-bottom:4px;">Session Duration</div>
+              <span id="session-duration" style="font-size:0.85rem;">--</span>
+            </div>
+            <div>
+              <div style="font-size:0.7rem;text-transform:uppercase;letter-spacing:0.12em;color:var(--color-text-muted);margin-bottom:4px;">IP Address</div>
+              <span id="session-ip" style="font-size:0.85rem;color:var(--color-text-muted);">--</span>
+            </div>
+            <div>
+              <div style="font-size:0.7rem;text-transform:uppercase;letter-spacing:0.12em;color:var(--color-text-muted);margin-bottom:4px;">Browser</div>
+              <span id="session-browser" style="font-size:0.85rem;color:var(--color-text-muted);">--</span>
+            </div>
+          </div>
+        </div>
+
+        </div><!-- /settings-profile-section -->
+
+        <!-- Security -->
+        <div class="settings-sub" id="settings-security-section">
+        <div class="card" style="padding:32px;margin-bottom:24px;">
+          <h2 style="font-size:1.25rem;margin-bottom:24px;padding-bottom:16px;border-bottom:var(--border-muted);">Security</h2>
+
+          <!-- PIN status display -->
+          <div id="pin-status-off" style="display:block;">
+            <div style="display:flex;justify-content:space-between;align-items:center;padding:12px 0;">
+              <div>
+                <div style="font-size:0.9rem;font-weight:500;">PIN Protection</div>
+                <div style="font-size:0.75rem;color:var(--color-text-muted);margin-top:2px;">Add a PIN as a second layer of security when logging in</div>
+                <div style="font-size:0.75rem;color:var(--color-text-muted);margin-top:4px;">Status: <span style="color:var(--color-text);">Disabled</span></div>
+              </div>
+              <button id="pin-enable-btn" class="btn btn--small btn--primary">ENABLE</button>
+            </div>
+          </div>
+
+          <div id="pin-status-on" style="display:none;">
+            <div style="display:flex;justify-content:space-between;align-items:center;padding:12px 0;">
+              <div>
+                <div style="font-size:0.9rem;font-weight:500;">PIN Protection</div>
+                <div style="font-size:0.75rem;color:var(--color-text-muted);margin-top:2px;">Your vault requires a PIN to log in</div>
+                <div style="font-size:0.75rem;margin-top:4px;color:var(--color-text);">Status: Enabled</div>
+              </div>
+              <button id="pin-disable-btn" class="btn btn--small btn--danger">DISABLE</button>
+            </div>
+          </div>
+
+          <!-- PIN setup form (hidden by default) -->
+          <div id="pin-setup-form" style="display:none;padding:16px 0;border-top:var(--border-muted);margin-top:12px;">
+            <div style="font-size:0.85rem;font-weight:500;margin-bottom:12px;" id="pin-form-title">Set your PIN</div>
+            <div class="input-group" style="margin-bottom:8px;">
+              <label for="settings-pin-input">Enter PIN (4-6 characters)</label>
+              <input type="text" id="settings-pin-input" class="input" placeholder="Enter PIN..." autocomplete="off" maxlength="6" data-1p-ignore="true" data-lpignore="true" data-form-type="other" style="-webkit-text-security:disc;text-security:disc;">
+            </div>
+            <div class="input-group" style="margin-bottom:12px;" id="pin-confirm-group">
+              <label for="settings-pin-confirm">Confirm PIN</label>
+              <input type="text" id="settings-pin-confirm" class="input" placeholder="Re-enter PIN..." autocomplete="off" maxlength="6" data-1p-ignore="true" data-lpignore="true" data-form-type="other" style="-webkit-text-security:disc;text-security:disc;">
+            </div>
+            <div style="display:flex;gap:8px;">
+              <button id="pin-submit-btn" class="btn btn--small btn--primary">CONFIRM</button>
+              <button id="pin-cancel-btn" class="btn btn--small">CANCEL</button>
+            </div>
+            <p style="font-size:0.7rem;color:var(--color-text-muted);margin-top:8px;">You will need this PIN every time you log in. If you forget it, you cannot access your account.</p>
+          </div>
+
+          <!-- Two-Factor Authentication -->
+          <div style="border-top:var(--border-muted);margin-top:16px;padding-top:16px;">
+            <div id="totp-status-off">
+              <div style="display:flex;justify-content:space-between;align-items:center;padding:12px 0;">
+                <div>
+                  <div style="font-size:0.9rem;font-weight:500;">Two-Factor Authentication</div>
+                  <div style="font-size:0.75rem;color:var(--color-text-muted);margin-top:2px;">Use Google Authenticator or any TOTP app</div>
+                  <div style="font-size:0.75rem;color:var(--color-text-muted);margin-top:4px;">Status: <span style="color:var(--color-text);">Disabled</span></div>
+                </div>
+                <button id="totp-enable-btn" class="btn btn--small btn--primary">ENABLE</button>
+              </div>
+            </div>
+
+            <div id="totp-status-on" style="display:none;">
+              <div style="display:flex;justify-content:space-between;align-items:center;padding:12px 0;">
+                <div>
+                  <div style="font-size:0.9rem;font-weight:500;">Two-Factor Authentication</div>
+                  <div style="font-size:0.75rem;color:var(--color-text-muted);margin-top:2px;">Protected by authenticator app</div>
+                  <div style="font-size:0.75rem;margin-top:4px;color:var(--color-text);">Status: Enabled</div>
+                </div>
+                <button id="totp-disable-btn" class="btn btn--small btn--danger">DISABLE</button>
+              </div>
+            </div>
+
+          </div>
+
+          <!-- Regenerate Seed Phrase -->
+          <div style="border-top:var(--border-muted);margin-top:16px;padding-top:16px;">
+            <div style="display:flex;justify-content:space-between;align-items:center;padding:12px 0;">
+              <div>
+                <div style="font-size:0.9rem;font-weight:500;">Regenerate Seed Phrase</div>
+                <div style="font-size:0.75rem;color:var(--color-text-muted);margin-top:2px;">Generate a new 24-word seed phrase for your account</div>
+                <div id="regen-seed-status" style="font-size:0.75rem;margin-top:4px;"></div>
+              </div>
+              <button id="regen-seed-btn" class="btn btn--small" disabled>REGENERATE</button>
+            </div>
+          </div>
+
+        </div>
+
+        </div><!-- /settings-security-section -->
+
+        <!-- Stats + Appearance side by side -->
+        <div class="settings-sub" id="settings-appearance-section">
+        <div class="card" style="padding:32px;margin-bottom:24px;">
+          <h2 style="font-size:1.25rem;margin-bottom:24px;padding-bottom:16px;border-bottom:var(--border-muted);">Appearance</h2>
+
+          <!-- Theme -->
+          <div style="display:flex;justify-content:space-between;align-items:center;padding:12px 0;border-bottom:var(--border-muted);">
+            <div>
+              <div style="font-size:0.9rem;font-weight:500;">Light Mode</div>
+              <div style="font-size:0.75rem;color:var(--color-text-muted);margin-top:2px;">Switch between dark and light theme</div>
+            </div>
+            <div class="toggle" id="settings-theme-toggle">
+              <div class="toggle__knob"></div>
+            </div>
+          </div>
+
+
+
+          <!-- Header Font -->
+          <div style="display:flex;justify-content:space-between;align-items:center;padding:12px 0;border-bottom:var(--border-muted);">
+            <div>
+              <div style="font-size:0.9rem;font-weight:500;">Header Font</div>
+              <div style="font-size:0.75rem;color:var(--color-text-muted);margin-top:2px;">Font for titles and headings. Leave empty for default.</div>
+            </div>
+            <input type="text" id="settings-header-font" class="input" placeholder="EB Garamond" style="width:180px;" autocomplete="off">
+          </div>
+
+          <!-- Body Font -->
+          <div style="display:flex;justify-content:space-between;align-items:center;padding:12px 0;border-bottom:var(--border-muted);">
+            <div>
+              <div style="font-size:0.9rem;font-weight:500;">Body Font</div>
+              <div style="font-size:0.75rem;color:var(--color-text-muted);margin-top:2px;">Font for body text and labels. Leave empty for default.</div>
+            </div>
+            <input type="text" id="settings-body-font" class="input" placeholder="DM Sans" style="width:180px;" autocomplete="off">
+          </div>
+
+          <!-- Sidebar Position -->
+          <div style="display:flex;justify-content:space-between;align-items:center;padding:12px 0;">
+            <div>
+              <div style="font-size:0.9rem;font-weight:500;">Sidebar Position</div>
+              <div style="font-size:0.75rem;color:var(--color-text-muted);margin-top:2px;">Move navigation to the other side</div>
+            </div>
+            <select id="settings-sidebar-pos" class="input" style="width:120px;">
+              <option value="left" selected>Left</option>
+              <option value="right">Right</option>
+            </select>
+          </div>
+        </div>
+
+        </div><!-- /settings-appearance-section -->
+
+        <!-- Preferences -->
+        <div class="settings-sub" id="settings-preferences-section">
+        <div class="card" style="padding:32px;margin-bottom:24px;">
+          <h2 style="font-size:1.25rem;margin-bottom:24px;padding-bottom:16px;border-bottom:var(--border-muted);">Preferences</h2>
+          <div style="display:flex;justify-content:space-between;align-items:center;padding:12px 0;border-bottom:var(--border-muted);">
+            <div>
+              <div style="font-size:0.9rem;font-weight:500;">Auto-clear inputs</div>
+              <div style="font-size:0.75rem;color:var(--color-text-muted);margin-top:2px;">Clear input fields after encryption</div>
+            </div>
+            <div class="toggle" id="settings-auto-clear">
+              <div class="toggle__knob"></div>
+            </div>
+          </div>
+          <div style="display:flex;justify-content:space-between;align-items:center;padding:12px 0;border-bottom:var(--border-muted);">
+            <div>
+              <div style="font-size:0.9rem;font-weight:500;">Confirm deletes</div>
+              <div style="font-size:0.75rem;color:var(--color-text-muted);margin-top:2px;">Ask before deleting entries</div>
+            </div>
+            <div class="toggle toggle--active" id="settings-confirm-delete">
+              <div class="toggle__knob"></div>
+            </div>
+          </div>
+          <div style="display:flex;justify-content:space-between;align-items:center;padding:12px 0;border-bottom:var(--border-muted);">
+            <div>
+              <div style="font-size:0.9rem;font-weight:500;">Auto-save</div>
+              <div style="font-size:0.75rem;color:var(--color-text-muted);margin-top:2px;">Automatically save to vault after encryption (hides save button)</div>
+            </div>
+            <div class="toggle" id="settings-auto-save">
+              <div class="toggle__knob"></div>
+            </div>
+          </div>
+          <div style="display:flex;justify-content:space-between;align-items:center;padding:12px 0;border-bottom:var(--border-muted);">
+            <div>
+              <div style="font-size:0.9rem;font-weight:500;">Default Encryption Type</div>
+              <div style="font-size:0.75rem;color:var(--color-text-muted);margin-top:2px;">Pre-selected encryption type when encrypting</div>
+            </div>
+            <select id="settings-default-enc" class="input" style="width:180px;">
+              <optgroup label="AES-GCM">
+                <option value="aes-128-gcm">AES-128-GCM</option>
+                <option value="aes-256-gcm" selected>AES-256-GCM</option>
+              </optgroup>
+              <optgroup label="AES-CBC">
+                <option value="aes-128-cbc">AES-128-CBC</option>
+                <option value="aes-192-cbc">AES-192-CBC</option>
+                <option value="aes-256-cbc">AES-256-CBC</option>
+              </optgroup>
+              <optgroup label="Stream Cipher">
+                <option value="chacha20">ChaCha20-Poly1305</option>
+              </optgroup>
+              <optgroup label="Asymmetric">
+                <option value="ecdh">ECDHE</option>
+                    <option value="rsa-1024">RSA-1024</option>
+                    <option value="rsa-2048">RSA-2048</option>
+                    <option value="rsa-3072">RSA-3072</option>
+                    <option value="rsa-4096">RSA-4096</option>
+              </optgroup>
+            </select>
+          </div>
+          <div style="display:flex;justify-content:space-between;align-items:center;padding:12px 0;">
+            <div>
+              <div style="font-size:0.9rem;font-weight:500;">Auto-lock Timeout</div>
+              <div style="font-size:0.75rem;color:var(--color-text-muted);margin-top:2px;">Lock the vault after inactivity</div>
+            </div>
+            <select id="settings-autolock" class="input" style="width:140px;">
+              <option value="60000">1 minute</option>
+              <option value="300000" selected>5 minutes</option>
+              <option value="900000">15 minutes</option>
+              <option value="1800000">30 minutes</option>
+              <option value="0">Never</option>
+            </select>
+          </div>
+        </div>
+
+        </div><!-- /settings-preferences-section -->
+
+        <!-- Export / Import -->
+        <div class="settings-sub" id="settings-data-section">
+        <div class="card" style="padding:32px;margin-bottom:24px;">
+          <h2 style="font-size:1.25rem;margin-bottom:24px;padding-bottom:16px;border-bottom:var(--border-muted);">Export / Import</h2>
+          <div style="display:flex;justify-content:space-between;align-items:center;padding:12px 0;border-bottom:var(--border-muted);">
+            <div>
+              <div style="font-size:0.9rem;font-weight:500;">Export Vault</div>
+              <div style="font-size:0.75rem;color:var(--color-text-muted);margin-top:2px;">Download all your encrypted data as a JSON file.</div>
+            </div>
+            <button id="settings-export-vault" class="btn btn--small">EXPORT VAULT</button>
+          </div>
+          <div style="display:flex;justify-content:space-between;align-items:center;padding:12px 0;">
+            <div>
+              <div style="font-size:0.9rem;font-weight:500;">Import Vault</div>
+              <div style="font-size:0.75rem;color:var(--color-text-muted);margin-top:2px;">Import data from a previously exported JSON file.</div>
+            </div>
+            <div style="display:flex;gap:8px;align-items:center;">
+              <input type="file" id="settings-import-file" accept=".json" style="display:none;">
+              <button id="settings-import-vault" class="btn btn--small">IMPORT VAULT</button>
+            </div>
+          </div>
+        </div>
+
+        </div><!-- /settings-data-section -->
+
+        <!-- Activity Log -->
+        <div class="settings-sub" id="settings-activity-section">
+        <div class="card" style="padding:32px;margin-bottom:24px;">
+          <h2 style="font-size:1.25rem;margin-bottom:24px;padding-bottom:16px;border-bottom:var(--border-muted);">Activity Log</h2>
+          <div id="audit-log-list" style="max-height:400px;overflow-y:auto;padding-right:8px;scrollbar-width:thin;scrollbar-color:var(--color-text-muted) var(--color-surface);">
+            <p style="font-size:0.85rem;color:var(--color-text-muted);">Loading...</p>
+          </div>
+        </div>
+        </div><!-- /settings-activity-section -->
+
+        <!-- Danger Zone -->
+        <div class="settings-sub" id="settings-danger-section">
+        <div class="card" style="padding:32px;">
+          <h2 style="font-size:1.25rem;margin-bottom:24px;padding-bottom:16px;border-bottom:var(--border-muted);">Danger Zone</h2>
+          <div style="display:flex;justify-content:space-between;align-items:center;padding:12px 0;border-bottom:var(--border-muted);">
+            <div>
+              <div style="font-size:0.9rem;font-weight:500;">Delete All Data</div>
+              <div style="font-size:0.75rem;color:var(--color-text-muted);margin-top:2px;">Remove all encrypted texts, images, and stego files. Your account stays.</div>
+            </div>
+            <button id="settings-delete-data" class="btn btn--small btn--danger">DELETE DATA</button>
+          </div>
+          <div style="display:flex;justify-content:space-between;align-items:center;padding:12px 0;">
+            <div>
+              <div style="font-size:0.9rem;font-weight:500;">Delete Account</div>
+              <div style="font-size:0.75rem;color:var(--color-text-muted);margin-top:2px;">Permanently delete your account, all data, and seed phrase access.</div>
+            </div>
+            <button id="settings-delete-account" class="btn btn--small btn--danger">DELETE ACCOUNT</button>
+          </div>
+        </div>
+        </div><!-- /settings-danger-section -->
+
+      </section>
+
+    </main>
+  </div>
+
+  <!-- Text View/Decrypt Modal -->
+  <div class="modal-overlay modal-overlay--hidden" id="text-modal">
+    <div class="modal" style="max-width:640px;">
+      <div class="modal__header">
+        <h2 class="modal__title" id="text-modal-title"></h2>
+        <div style="display:flex;gap:8px;align-items:center;">
+          <span id="text-modal-strength" style="font-size:0.75rem;color:var(--color-text-muted);"></span>
+          <button id="text-modal-close" class="btn btn--small">CLOSE</button>
+        </div>
+      </div>
+      <div class="modal__body" id="text-modal-body"></div>
+    </div>
+  </div>
+
+  <!-- Prompt Modal -->
+  <div class="modal-overlay modal-overlay--hidden" id="prompt-modal">
+    <div class="modal" style="max-width:440px;">
+      <div class="modal__header">
+        <h2 class="modal__title" id="prompt-modal-title">Enter Key</h2>
+      </div>
+      <div class="modal__body">
+        <p id="prompt-modal-message" style="font-size:0.85rem;color:var(--color-text-muted);margin-bottom:12px;"></p>
+        <input type="text" id="prompt-modal-input" class="input" placeholder="" autocomplete="off">
+      </div>
+      <div class="modal__footer" style="display:flex;gap:8px;justify-content:flex-end;">
+        <button id="prompt-modal-cancel" class="btn btn--small">CANCEL</button>
+        <button id="prompt-modal-ok" class="btn btn--small btn--primary">DECRYPT</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Confirm Modal -->
+  <div class="modal-overlay modal-overlay--hidden" id="confirm-modal">
+    <div class="modal" style="max-width:400px;">
+      <div class="modal__header">
+        <h2 class="modal__title" id="confirm-modal-title">Confirm</h2>
+      </div>
+      <div class="modal__body">
+        <p id="confirm-modal-message" style="font-size:0.9rem;"></p>
+      </div>
+      <div class="modal__footer" style="display:flex;gap:8px;justify-content:flex-end;">
+        <button id="confirm-modal-cancel" class="btn btn--small">CANCEL</button>
+        <button id="confirm-modal-ok" class="btn btn--small btn--primary">CONFIRM</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Regenerate Seed Modal -->
+  <div class="modal-overlay modal-overlay--hidden" id="regen-seed-modal">
+    <div class="modal" style="max-width:500px;">
+      <div class="modal__header">
+        <h2 class="modal__title">Regenerate Seed Phrase</h2>
+      </div>
+      <div class="modal__body">
+        <!-- Step 1: Verify TOTP -->
+        <div id="regen-step1">
+          <p style="font-size:0.85rem;color:var(--color-text-muted);margin-bottom:16px;">Enter your authenticator code to verify your identity.</p>
+          <div class="input-group">
+            <label for="regen-totp-input">Authenticator Code</label>
+            <input type="text" id="regen-totp-input" class="input" placeholder="000000" maxlength="6" inputmode="numeric" autocomplete="off" style="letter-spacing:0.5em;font-size:1.3rem;text-align:center;">
+          </div>
+        </div>
+        <!-- Step 2: Show new seed -->
+        <div id="regen-step2" style="display:none;">
+          <p style="font-size:0.85rem;color:var(--color-text-muted);margin-bottom:8px;">
+            Your new 24-word seed phrase. Write it down carefully. Your old seed phrase will no longer work.
+          </p>
+          <div class="seed-grid" id="regen-seed-display"></div>
+          <p style="font-size:0.75rem;color:var(--color-text-muted);border-top:var(--border-muted);padding-top:12px;">
+            Do not share this phrase. Anyone with these words has full access to your vault.
+          </p>
+        </div>
+      </div>
+      <div class="modal__footer">
+        <button id="regen-cancel-btn" class="btn btn--small">CANCEL</button>
+        <button id="regen-verify-btn" class="btn btn--small btn--primary">VERIFY</button>
+        <button id="regen-copy-btn" class="btn btn--small" style="display:none;">COPY PHRASE</button>
+        <button id="regen-done-btn" class="btn btn--small btn--primary" style="display:none;">I HAVE SAVED MY PHRASE</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- TOTP Setup Modal -->
+  <div class="modal-overlay modal-overlay--hidden" id="totp-setup-modal">
+    <div class="modal" style="max-width:420px;">
+      <div class="modal__header">
+        <h2 class="modal__title">Enable Two-Factor Authentication</h2>
+      </div>
+      <div class="modal__body" style="text-align:center;">
+        <p style="font-size:0.85rem;color:var(--color-text-muted);margin-bottom:20px;">Scan this QR code with Google Authenticator or any TOTP app.</p>
+
+        <div style="display:inline-block;padding:16px;background:#fff;margin-bottom:20px;">
+          <div id="totp-qr-container"></div>
+        </div>
+
+        <div class="input-group" style="text-align:left;margin-bottom:16px;">
+          <label>Manual Entry Code</label>
+          <div style="display:flex;gap:8px;">
+            <input type="text" id="totp-secret-display" class="input" readonly style="font-family:'Courier New',monospace;letter-spacing:0.05em;font-size:0.8rem;flex:1;">
+            <button class="btn btn--small" onclick="navigator.clipboard.writeText(document.getElementById('totp-secret-display').value);Toast.show('Copied')">COPY</button>
+          </div>
+        </div>
+
+        <div style="border-top:var(--border-muted);padding-top:16px;">
+          <div class="input-group" style="text-align:left;margin-bottom:16px;">
+            <label for="totp-confirm-input">Verify Code</label>
+            <input type="text" id="totp-confirm-input" class="input" placeholder="000000" maxlength="6" inputmode="numeric" autocomplete="off" style="letter-spacing:0.5em;font-size:1.3rem;text-align:center;">
+          </div>
+        </div>
+      </div>
+      <div class="modal__footer">
+        <button id="totp-cancel-btn" class="btn btn--small">CANCEL</button>
+        <button id="totp-confirm-btn" class="btn btn--small btn--primary">ENABLE 2FA</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- TOTP Disable Modal -->
+  <div class="modal-overlay modal-overlay--hidden" id="totp-disable-modal">
+    <div class="modal" style="max-width:380px;">
+      <div class="modal__header">
+        <h2 class="modal__title">Disable Two-Factor Authentication</h2>
+      </div>
+      <div class="modal__body" style="text-align:center;">
+        <p style="font-size:0.85rem;color:var(--color-text-muted);margin-bottom:20px;">Enter your current authenticator code to confirm.</p>
+        <div class="input-group" style="text-align:left;">
+          <label for="totp-disable-input">Authenticator Code</label>
+          <input type="text" id="totp-disable-input" class="input" placeholder="000000" maxlength="6" inputmode="numeric" autocomplete="off" style="letter-spacing:0.5em;font-size:1.3rem;text-align:center;">
+        </div>
+      </div>
+      <div class="modal__footer">
+        <button id="totp-disable-cancel-btn" class="btn btn--small">CANCEL</button>
+        <button id="totp-disable-confirm-btn" class="btn btn--small btn--danger">DISABLE 2FA</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast Container -->
+  <div class="toast-container" id="toast-container"></div>
+
+  <!-- Scripts -->
+  <script src="https://unpkg.com/lenis@1.3.21/dist/lenis.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.2.0/crypto-js.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/tweetnacl@1.0.3/nacl-fast.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/tweetnacl-util@0.15.1/nacl-util.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+  <script src="assets/js/api.js"></script>
+  <script src="assets/js/crypto.js"></script>
+  <script src="assets/js/auth.js"></script>
+  <script src="assets/js/dashboard.js"></script>
+  <script src="assets/js/text-tab.js"></script>
+  <script src="assets/js/image-tab.js"></script>
+  <script src="assets/js/file-tab.js"></script>
+  <script src="assets/js/stegano-tab.js"></script>
+  <script src="assets/js/custom-select.js"></script>
+  <script src="assets/js/font-picker.js"></script>
+  <script src="assets/js/settings.js"></script>
+  <script src="assets/js/chat.js"></script>
+  <script src="assets/js/app.js"></script>
+</body>
+</html>
